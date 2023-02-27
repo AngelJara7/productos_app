@@ -1,5 +1,8 @@
+import 'dart:ffi';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:productos_app/providers/product_form_provider.dart';
 import 'package:productos_app/services/services.dart';
 import 'package:productos_app/ui/input_decorations.dart';
@@ -31,11 +34,15 @@ class _ProductScreenBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+
+    final productFormProvider = Provider.of<ProductFormProvider>(context);
+
     return Scaffold(
      body: SingleChildScrollView(
       //keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
        child: Column(
          children: [
+          const SizedBox(height: 35,),
            Stack(
              children: [
                ProductImage(url: productService.selectedProduct?.picture),
@@ -51,8 +58,18 @@ class _ProductScreenBody extends StatelessWidget {
                  top: 60,
                  right: 20,
                  child: IconButton(
-                   onPressed: () {
-                     
+                   onPressed: () async {
+                     final picked = ImagePicker();
+                     final XFile? pickedFile = await picked.pickImage(source: ImageSource.gallery,
+                     imageQuality: 100
+                     );
+
+                     if (pickedFile == null) {
+                      return;
+                     }
+
+                     productService.updateSelectedProductImage(pickedFile.path);
+
                    },
                    icon: const Icon(Icons.camera_alt_outlined, size: 40, color: Colors.white,)
                  )
@@ -66,8 +83,20 @@ class _ProductScreenBody extends StatelessWidget {
      ),
      floatingActionButtonLocation: FloatingActionButtonLocation.endDocked,
      floatingActionButton: FloatingActionButton(
-       child: const Icon(Icons.save_outlined),
-       onPressed: () {},
+       onPressed: productService.isSaving
+       ? null
+       : () async {
+        if (!productFormProvider.isValidForm()) return;
+
+        final String? imageUrl = await productService.uploadImage();
+
+        if (imageUrl != null) productFormProvider.product.picture = imageUrl;
+
+        await productService.saveOrCreateProduct(productFormProvider.product);
+       },
+       child: productService.isSaving
+       ? const CircularProgressIndicator(color: Colors.white,) 
+       : const Icon(Icons.save_outlined),
      ),
     );
   }
@@ -88,6 +117,8 @@ class _ProductForm extends StatelessWidget {
         width: double.infinity,
         decoration: _buildBoxDecoration(),
         child: Form(
+          key: productForm.formKey,
+          autovalidateMode: AutovalidateMode.onUserInteraction,
           child: Column(
             children: [
               const SizedBox(height: 10,),
@@ -95,9 +126,7 @@ class _ProductForm extends StatelessWidget {
                 initialValue: product.name,
                 onChanged: (value) => product.name = value,
                 validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return "El nombre el obligatorio";
-                  }
+                  if (value == null || value.isEmpty) return "El nombre es obligatorio";
                 },
                 decoration: InputDecorations.authInputDecoration(
                   hintText: "Nombre del producto",
