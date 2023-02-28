@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:productos_app/models/models.dart';
 import 'package:productos_app/screens/screens.dart';
-import 'package:productos_app/services/products_service.dart';
 import 'package:productos_app/widgets/widgets.dart';
 import 'package:provider/provider.dart';
+
+import '../services/services.dart';
 
 
 class HomeScreen extends StatelessWidget {
@@ -14,12 +15,22 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
 
     final productsService = Provider.of<ProductsService>(context);
+    final authService = Provider.of<AuthService>(context, listen: false);
 
     if (productsService.isLoading) return const LoadingScreen();
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Productos")
+        title: const Text("Productos"),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.login),
+            onPressed: () {
+             authService.logout();
+             Navigator.pushReplacementNamed(context, "login");
+            },
+          ),
+        ]
       ),
       body: ListView.builder(
         itemCount: productsService.products.length,
