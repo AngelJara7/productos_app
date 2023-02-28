@@ -1,5 +1,3 @@
-import 'dart:ffi';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
@@ -127,6 +125,7 @@ class _ProductForm extends StatelessWidget {
                 onChanged: (value) => product.name = value,
                 validator: (value) {
                   if (value == null || value.isEmpty) return "El nombre es obligatorio";
+                  return null;
                 },
                 decoration: InputDecorations.authInputDecoration(
                   hintText: "Nombre del producto",

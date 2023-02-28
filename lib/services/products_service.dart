@@ -104,8 +104,6 @@ class ProductsService extends ChangeNotifier {
     final resp = await http.Response.fromStream(streamResponse);
 
     if(resp.statusCode != 200 && resp.statusCode != 200) {
-      print("Algo salió mal");
-      print(resp.body);
       return null;
     }
 
