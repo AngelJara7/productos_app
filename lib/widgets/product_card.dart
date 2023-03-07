@@ -100,7 +100,7 @@ class _ProductDetails extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(title, style: const TextStyle(fontSize: 20, color: Colors.white, fontWeight: FontWeight.bold),
-            maxLines: 2,
+            maxLines: 1,
             overflow: TextOverflow.ellipsis,
             ),
             Text(subtitle, style: const TextStyle(fontSize: 15, color: Colors.white,),
